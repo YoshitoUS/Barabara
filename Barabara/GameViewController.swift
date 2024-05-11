@@ -14,6 +14,8 @@ class GameViewController: UIViewController {
     
     @IBOutlet var resultLabel: UILabel!
     
+    var isScoreCalculated: Bool = false  // スコアが計算されたかどうかを追跡するフラグ
+    
     var timer: Timer!
     var score: Int = 1000
     let saveData: UserDefaults = UserDefaults.standard
@@ -28,6 +30,7 @@ class GameViewController: UIViewController {
         resultLabel.isHidden = true
         timer = Timer.scheduledTimer(timeInterval: 0.005, target: self, selector: #selector(self.up), userInfo: nil, repeats: true)
         timer.fire()
+        isScoreCalculated = false  // ゲームを再開するたびにフラグをリセット
     }
     
 
@@ -56,26 +59,29 @@ class GameViewController: UIViewController {
             timer.invalidate()
         }
         
-        for i in 0..<3{
-            score = score - abs(Int(width/2 - positionX[i]))*2
-        }
-        
-        resultLabel.text = "Score: " + String(score)
-        resultLabel.isHidden = false
-        
-        let highScore1: Int = saveData.integer(forKey: "score1")
-        let highScore2: Int = saveData.integer(forKey: "score2")
-        let highScore3: Int = saveData.integer(forKey: "score3")
-        
-        if score > highScore1{
-            saveData.set(score, forKey: "score1")
-            saveData.set(highScore1, forKey: "score2")
-            saveData.set(highScore2, forKey: "score3")
-        }else if score > highScore2{
-            saveData.set(score, forKey: "score2")
-            saveData.set(highScore2, forKey: "score3")
-        }else if score > highScore3 {
-            saveData.set(score, forKey: "score3")
+        if !isScoreCalculated{ //スコアがまだ計算されていない場合のみ計算を行う
+            for i in 0..<3{
+                score = score - abs(Int(width/2 - positionX[i]))*2
+            }
+            
+            resultLabel.text = "Score: " + String(score)
+            resultLabel.isHidden = false
+            isScoreCalculated = true  // スコアが計算されたとマーク
+            
+            let highScore1: Int = saveData.integer(forKey: "score1")
+            let highScore2: Int = saveData.integer(forKey: "score2")
+            let highScore3: Int = saveData.integer(forKey: "score3")
+            
+            if score > highScore1{
+                saveData.set(score, forKey: "score1")
+                saveData.set(highScore1, forKey: "score2")
+                saveData.set(highScore2, forKey: "score3")
+            }else if score > highScore2{
+                saveData.set(score, forKey: "score2")
+                saveData.set(highScore2, forKey: "score3")
+            }else if score > highScore3 {
+                saveData.set(score, forKey: "score3")
+            }
         }
     }
     
